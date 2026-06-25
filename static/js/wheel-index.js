@@ -8,7 +8,10 @@ const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
 function applyTheme(theme) {
 	root.dataset.theme = theme;
 	if (toggle) {
-		toggle.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+		const nextTheme = theme === "dark" ? "light" : "dark";
+		toggle.textContent = theme === "dark" ? "☀" : "☾";
+		toggle.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
+		toggle.setAttribute("title", `Switch to ${nextTheme} mode`);
 		toggle.setAttribute("aria-pressed", String(theme === "dark"));
 	}
 }

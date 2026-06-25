@@ -77,13 +77,13 @@ def write_html(
         "  </head>",
         "  <body>",
         "    <main>",
+        '      <nav class="actions" aria-label="Index actions">',
+        '        <a class="button icon-button" href="/" aria-label="Home" title="Home">⌂</a>',
+        '        <button class="button icon-button" type="button" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode">☾</button>',
+        "      </nav>",
         "      <header>",
         "        <p class=\"eyebrow\">Python Simple Repository</p>",
         f"        <h1>{html.escape(heading)}</h1>",
-        '        <nav class="actions" aria-label="Index actions">',
-        '          <a class="button" href="/">Back To Blog</a>',
-        '          <button class="button" type="button" data-theme-toggle>Dark Mode</button>',
-        "        </nav>",
         "      </header>",
         '      <div class="listing">',
         "        <table>",
@@ -130,6 +130,7 @@ def main() -> None:
     for project, project_wheels in sorted(by_project.items()):
         latest_wheel = max(project_wheels, key=lambda wheel: wheel.stat().st_mtime)
         project_links.append(Link(f"{project}/", f"{project}/", modified(latest_wheel), "-"))
+    project_links.insert(0, Link("../", "..", "-", "-"))
     write_html(
         INDEX_ROOT / "index.html",
         "Index of /index/whl/vulkan/",

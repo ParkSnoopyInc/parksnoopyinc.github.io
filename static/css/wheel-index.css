@@ -48,12 +48,13 @@ header {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
-	margin-top: 24px;
+	margin-bottom: 32px;
 }
 
 .button {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	min-height: 32px;
 	padding: 0 12px;
 	border: 1px solid var(--hairline);
@@ -69,6 +70,12 @@ header {
 		"Segoe UI",
 		sans-serif;
 	cursor: pointer;
+}
+
+.icon-button {
+	width: 32px;
+	padding: 0;
+	font-size: 16px;
 }
 
 .button:hover {
