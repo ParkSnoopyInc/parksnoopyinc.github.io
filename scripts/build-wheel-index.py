@@ -72,6 +72,7 @@ def write_html(
         '    <meta charset="utf-8">',
         '    <meta name="viewport" content="width=device-width, initial-scale=1">',
         f'    <link rel="stylesheet" href="{html.escape(stylesheet, quote=True)}">',
+        '    <script src="/js/wheel-index.js" defer></script>',
         f"    <title>{html.escape(title)}</title>",
         "  </head>",
         "  <body>",
@@ -79,6 +80,10 @@ def write_html(
         "      <header>",
         "        <p class=\"eyebrow\">Python Simple Repository</p>",
         f"        <h1>{html.escape(heading)}</h1>",
+        '        <nav class="actions" aria-label="Index actions">',
+        '          <a class="button" href="/">Back To Blog</a>',
+        '          <button class="button" type="button" data-theme-toggle>Dark Mode</button>',
+        "        </nav>",
         "      </header>",
         '      <div class="listing">',
         "        <table>",
@@ -121,9 +126,10 @@ def main() -> None:
     for wheel in wheels:
         by_project[project_from_wheel(wheel)].append(wheel)
 
-    project_links = [
-        Link(f"{project}/", f"{project}/", "-", "-") for project in sorted(by_project)
-    ]
+    project_links = []
+    for project, project_wheels in sorted(by_project.items()):
+        latest_wheel = max(project_wheels, key=lambda wheel: wheel.stat().st_mtime)
+        project_links.append(Link(f"{project}/", f"{project}/", modified(latest_wheel), "-"))
     write_html(
         INDEX_ROOT / "index.html",
         "Index of /index/whl/vulkan/",
