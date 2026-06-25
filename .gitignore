@@ -1,0 +1,9 @@
+public/
+resources/_gen/
+.hugo_build.lock
+__pycache__/
+*.pyc
+/static/index/whl/vulkan/index.html
+/static/index/whl/vulkan/*/
+!/static/index/whl/vulkan/_wheels/
+!/static/index/whl/vulkan/_wheels/.gitkeep
