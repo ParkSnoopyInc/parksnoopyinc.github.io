@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  SKIP_GIT_LFS: 'false'
+
 permissions:
   contents: read
   pages: write
@@ -24,6 +27,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          lfs: false
+
+      - name: Pull Git LFS files
+        if: env.SKIP_GIT_LFS != 'true'
+        run: |
+          git lfs install --local
+          git lfs pull --include="static/index/whl/vulkan/_wheels/**"
 
       - name: Setup Go
         uses: actions/setup-go@v6
