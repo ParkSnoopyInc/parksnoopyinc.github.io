@@ -1,5 +1,7 @@
 ---
 title: "PyTorch Vulkan wheel index"
+date: "2026-06-26T00:00:00+09:00"
+lastmod: "2026-06-26T00:00:00+09:00"
 description: "PEP 503 static wheel index served from GitHub Pages."
 tags: ["python", "pytorch", "vulkan", "wheels"]
 ---
@@ -24,7 +26,7 @@ This path is a static PEP 503 simple repository under `static/index/whl/vulkan/`
 Add wheel files under `static/index/whl/vulkan/_wheels/`, then run:
 
 ```sh
-python3 scripts/build-wheel-index.py
+uv run --script scripts/build-wheel-index.py
 ```
 
 The script writes normalized project pages such as `/index/whl/vulkan/torch/` and root project links at `/index/whl/vulkan/`.
