@@ -8,6 +8,8 @@ import html
 import re
 import shutil
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +17,14 @@ INDEX_ROOT = ROOT / "static" / "index" / "whl" / "vulkan"
 WHEEL_DIR = INDEX_ROOT / "_wheels"
 
 NORMALIZE_RE = re.compile(r"[-_.]+")
+
+
+@dataclass(frozen=True)
+class Link:
+    href: str
+    label: str
+    modified: str
+    size: str
 
 
 def normalize_project(name: str) -> str:
@@ -35,22 +45,65 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def write_html(path: Path, title: str, links: list[tuple[str, str]]) -> None:
+def human_size(size: int) -> str:
+    units = ["B", "KiB", "MiB", "GiB"]
+    value = float(size)
+    for unit in units:
+        if value < 1024 or unit == units[-1]:
+            return f"{value:.1f} {unit}" if unit != "B" else f"{size} B"
+        value /= 1024
+    raise AssertionError("unreachable")
+
+
+def modified(path: Path) -> str:
+    return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).strftime(
+        "%Y-%m-%d %H:%M UTC"
+    )
+
+
+def write_html(
+    path: Path, title: str, heading: str, stylesheet: str, links: list[Link]
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     body = [
         "<!doctype html>",
-        "<html>",
+        '<html lang="en">',
         "  <head>",
         '    <meta charset="utf-8">',
+        '    <meta name="viewport" content="width=device-width, initial-scale=1">',
+        f'    <link rel="stylesheet" href="{html.escape(stylesheet, quote=True)}">',
         f"    <title>{html.escape(title)}</title>",
         "  </head>",
         "  <body>",
+        "    <main>",
+        f"      <h1>{html.escape(heading)}</h1>",
+        '      <div class="listing">',
+        "        <table>",
+        "          <thead>",
+        "            <tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>",
+        "          </thead>",
+        "          <tbody>",
     ]
-    for href, label in links:
+    for link in links:
         body.append(
-            f'    <a href="{html.escape(href, quote=True)}">{html.escape(label)}</a><br>'
+            '            <tr>'
+            f'<td class="name"><a href="{html.escape(link.href, quote=True)}">{html.escape(link.label)}</a></td>'
+            f'<td class="modified">{html.escape(link.modified)}</td>'
+            f'<td class="size">{html.escape(link.size)}</td>'
+            "</tr>"
         )
-    body.extend(["  </body>", "</html>", ""])
+    body.extend(
+        [
+            "          </tbody>",
+            "        </table>",
+            "      </div>",
+            "      <footer>PEP 503 simple repository</footer>",
+            "    </main>",
+            "  </body>",
+            "</html>",
+            "",
+        ]
+    )
     path.write_text("\n".join(body), encoding="utf-8")
 
 
@@ -65,16 +118,32 @@ def main() -> None:
     for wheel in wheels:
         by_project[project_from_wheel(wheel)].append(wheel)
 
-    project_links = [(f"{project}/", project) for project in sorted(by_project)]
-    write_html(INDEX_ROOT / "index.html", "Vulkan wheel index", project_links)
+    project_links = [
+        Link(f"{project}/", f"{project}/", "-", "-") for project in sorted(by_project)
+    ]
+    write_html(
+        INDEX_ROOT / "index.html",
+        "Index of /index/whl/vulkan/",
+        "Index of /index/whl/vulkan/",
+        "/css/wheel-index.css",
+        project_links,
+    )
 
     for project, project_wheels in sorted(by_project.items()):
         links = []
         for wheel in project_wheels:
             digest = sha256(wheel)
             href = f"../_wheels/{wheel.name}#sha256={digest}"
-            links.append((href, wheel.name))
-        write_html(INDEX_ROOT / project / "index.html", project, links)
+            links.append(
+                Link(href, wheel.name, modified(wheel), human_size(wheel.stat().st_size))
+            )
+        write_html(
+            INDEX_ROOT / project / "index.html",
+            f"Index of /index/whl/vulkan/{project}/",
+            f"Index of /index/whl/vulkan/{project}/",
+            "/css/wheel-index.css",
+            links,
+        )
 
 
 if __name__ == "__main__":
