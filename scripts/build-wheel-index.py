@@ -130,7 +130,6 @@ def main() -> None:
     for project, project_wheels in sorted(by_project.items()):
         latest_wheel = max(project_wheels, key=lambda wheel: wheel.stat().st_mtime)
         project_links.append(Link(f"{project}/", f"{project}/", modified(latest_wheel), "-"))
-    project_links.insert(0, Link("../", "..", "-", "-"))
     write_html(
         INDEX_ROOT / "index.html",
         "Index of /index/whl/vulkan/",
@@ -140,7 +139,7 @@ def main() -> None:
     )
 
     for project, project_wheels in sorted(by_project.items()):
-        links = []
+        links = [Link("../", "..", "-", "-")]
         for wheel in project_wheels:
             digest = sha256(wheel)
             href = f"../_wheels/{wheel.name}#sha256={digest}"
